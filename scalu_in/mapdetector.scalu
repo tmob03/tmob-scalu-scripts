@@ -1,5 +1,5 @@
 sandbox map_detect
-/* Map detecting by tmob*/
+/* Map detecting for hl1 by tmob*/
 
 file {
 	game: changedmap
