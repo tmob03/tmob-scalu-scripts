@@ -1,5 +1,5 @@
 sandbox map_detect
-/* Map detecting for hl1 by tmob*/
+/* Map detecting by tmob*/
 
 file {
 	game: changedmap
@@ -47,6 +47,11 @@ service checkmap {
 			[say uc cfg]
 			[echo uc cfg]
 		}
+		if (current_map == 12) {
+			[ucobbobind]
+			[echo ucobbo]
+			[say UCobbo]
+		}
 		if (current_map == 13) {
 			[exec oc.cfg]
 			[say OC cfg]
@@ -59,10 +64,24 @@ service checkmap {
 			[say BP cfg]
 			[echo bp cfg]
 		}
+		if (current_map == 19) {
+			[bind mouse4 +bpjb2]
+			[bind e +usespam]
+			[say bpjb2]
+		}
+		if (current_map == 27) {
+			[bind mouse4 +ds]
+			[say +ds]
+		}
 		if (current_map == 28) {
 			[exec pu.cfg]
 			[say PU skip ready]
 			[echo pu skip]
+		}
+		if (current_map == 32) {
+			[oarobbobind]
+			[echo oarobbo]
+			[say OARobbo]
 		}
 		if (current_map == 39) {
 			[exec oarjb2.cfg]
@@ -73,6 +92,10 @@ service checkmap {
 			[exec apprehension.cfg]
 			[say APP cfg, ducktap F5, +attack2 F4]
 			[echo app cfg executed]
+		}
+		if (current_map == 42) {
+			[bind e obbo1500rebind]
+			[say obbo1500rebind]
 		}
 		if (current_map == 48) {
 			[exec rp.cfg]
@@ -88,8 +111,19 @@ service checkmap {
 			[exec st.cfg]
 			[say st cfg]
 			[echo st cfg loaded]
-			[taubind]
-			[say taubind]
+			@taubind
+		}
+		if (current_map == 60) {
+			@attack2
+		}
+		if (current_map == 61) {
+			@taubind
+		}
+		if (current_map == 62) {
+			@attack2
+		}
+		if (current_map == 66) {
+			@attack2
 		}
 		if (current_map == 67) {
 			[exec faf.cfg]
@@ -103,10 +137,25 @@ service checkmap {
 			[say lc cfg]
 			[echo lc cfg executed]
 		}
+		if (current_map == 74) {
+			@taubind
+		}
+		if (current_map == 75) {
+			@attack2
+		}
 		if (current_map == 76) {
 			[exec gonarch.cfg]
 			[say gonarch cfg, saveload trick on TAB and MOUSE5]
 			[echo gonarch cfg]
+		}
+		if (current_map == 81) {
+			@taubind
+		}
+		if (current_map == 82) {
+			@attack2
+		}
+		if (current_map == 84) {
+			@taubind
 		}
 	}
 }
@@ -159,4 +208,16 @@ service stop_detector {
 	stop_bind = 1
 	[alias reload reload]
 	[say detector stopped]
+}
+
+service taubind {
+	[taubind]
+	[say taubind]
+	[echo taubind]
+}
+
+service attack2 {
+	[bind mouse2 +attack2]
+	[echo +attack2 enabled]
+	[say +attack2 enabled]
 }
