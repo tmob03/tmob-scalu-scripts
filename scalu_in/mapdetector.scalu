@@ -133,7 +133,7 @@ service checkmap {
 			[say fafobbo]
 		}
 		if (current_map == 70) {
-			[exec lc.fg]
+			[exec lc.cfg]
 			[say lc cfg]
 			[echo lc cfg executed]
 		}
