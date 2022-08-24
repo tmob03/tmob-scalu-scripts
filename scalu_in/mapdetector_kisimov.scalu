@@ -1,0 +1,237 @@
+sandbox map_detect
+/* Map detecting by tmob*/
+
+file {
+	game: changedmap
+}
+
+map {
+	boot: @init
+	changedmap: @increment_map
+	decrement_detector: @decrement_map
+	nextmap: @next_map_bind
+	save_quick: @saved_quick
+	save_hard: @saved_hard
+	save_hard2: @saved_hard2
+	load_quick: @loaded_quick
+	load_hard: @loaded_hard
+	load_hard2: @loaded_hard2
+	load_autosave: @loaded_autosave
+	stop_detector: @stop_detector
+}
+
+service init {
+	current_map = 0
+	loaded_on_prev_map_quick = 0
+	loaded_on_prev_map_hard = 0
+	loaded_on_prev_map_hard2 = 0
+	stop_bind = 0
+	[Echo Map detector by tmob loaded]
+	saveloadnum = 0
+}
+
+service increment_map {
+	current_map = current_map + 1
+	@checkmap
+}
+
+service next_map_bind {
+	[say next map]
+	@increment_map
+}
+
+service checkmap {
+	if (stop_bind == 1) {
+	
+	} else {
+		if (current_map == 1){
+			[exec am.cfg]
+			[say AM cfg]
+			[echo am cfg]
+		}
+		if (current_map == 8){
+			[exec uc.cfg]
+			[say uc cfg]
+			[echo uc cfg]
+		}
+		if (current_map == 12) {
+			[ucobbobind]
+			[echo ucobbo]
+			[say UCobbo]
+		}
+		if (current_map == 13) {
+			[exec oc.cfg]
+			[say OC cfg]
+			[echo oc cfg]
+			[ocobbobind]
+			[say OCobbo]
+		}
+		if (current_map == 17) {
+			[exec bp.cfg]
+			[say BP cfg]
+			[echo bp cfg]
+		}
+		if (current_map == 19) {
+			[bind mouse4 +bpjb2]
+			[bind e +usespam]
+			[say bpjb2]
+		}
+		if (current_map == 27) {
+			[bind mouse4 +ds]
+			[say +ds]
+		}
+		if (current_map == 28) {
+			[exec pu.cfg]
+			[say PU skip ready]
+			[echo pu skip]
+		}
+		if (current_map == 32) {
+			[oarobbobind]
+			[echo oarobbo]
+			[say OARobbo]
+		}
+		if (current_map == 39) {
+			[exec oarjb2.cfg]
+			[echo oarjb2 executed]
+			[say Oarjb2 executed]
+		}
+		if (current_map == 40) {
+			[exec apprehension.cfg]
+			[say APP cfg, ducktap F5, +attack2 F4]
+			[echo app cfg executed]
+		}
+		if (current_map == 42) {
+			[bind e obbo1500rebind]
+			[say obbo1500rebind]
+		}
+		if (current_map == 48) {
+			[exec rp.cfg]
+			[say rp cfg]
+			[echo rp cfg loaded]
+		}
+		if (current_map == 52) {
+			[exec qe.cfg]
+			[say qe cfg]
+			[echo qe cfg loaded]
+		}
+		if (current_map == 56) {
+			[exec st.cfg]
+			[say st cfg]
+			[echo st cfg loaded]
+			@taubind
+		}
+		if (current_map == 60) {
+			@attack2
+		}
+		if (current_map == 61) {
+			@taubind
+		}
+		if (current_map == 63) {
+			@taubind
+		}
+		if (current_map == 66) {
+			@attack2
+			saveloadnum = 0
+		}
+		if (current_map == 67) { 
+			[exec faf.cfg]
+			[say faf cfg]
+			[echo faf cfg executed]
+			if (saveloadnum == 0) {
+				[bind e fafobbo]
+				[say fafobbo]
+				saveloadnum = 1
+			}
+		}
+		if (current_map == 69) {
+			@taubind
+		}
+		if (current_map == 70) {
+			[exec lc.cfg]
+			[say lc cfg]
+			[echo lc cfg executed]
+			@attack2
+		}
+		if (current_map == 74) {
+			@taubind
+		}
+		if (current_map == 75) {
+			@taubind
+		}
+		if (current_map == 76) {
+			[exec gonarch.cfg]
+			[say gonarch cfg, saveload trick on TAB and MOUSE5]
+			[echo gonarch cfg]
+		}
+		if (current_map == 81) {
+			@taubind
+		}
+		if (current_map == 82) {
+			@attack2
+		}
+		if (current_map == 84) {
+			@taubind
+		}
+	}
+}
+
+service decrement_map {
+	current_map = current_map - 1
+	@checkmap
+}
+
+service saved_quick {
+	loaded_on_prev_map_quick = current_map
+	[save quick]
+}
+
+service saved_hard {
+	loaded_on_prev_map_hard = current_map
+	[save hard]
+}
+
+service saved_hard2 {
+	loaded_on_prev_map_hard2 = current_map
+	[save hard2]
+}
+
+service loaded_quick {
+	current_map = loaded_on_prev_map_quick
+	current_map = current_map - 1
+	[load quick]
+}
+
+service loaded_hard {
+	current_map = loaded_on_prev_map_hard
+	current_map = current_map - 1
+	[load hard]
+}
+
+service loaded_hard2 {
+	current_map = loaded_on_prev_map_hard2
+	current_map = current_map - 1
+	[load hard2]
+}
+
+service loaded_autosave {
+	current_map = current_map - 1
+	[load autosave]
+	[say Loaded autosave, use your $decrement_map bind if not on the same map]
+}
+
+service stop_detector {
+	stop_bind = 1
+	[say detector stopped]
+}
+
+service taubind {
+	[taubind]
+	[say taubind]
+	[echo taubind]
+}
+
+service attack2 {
+	[bind mouse2 +attack2]
+	[echo +attack2 enabled]
+	[say +attack2 enabled]
+}
