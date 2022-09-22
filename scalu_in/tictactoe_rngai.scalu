@@ -1,0 +1,550 @@
+sandbox rockpaperscissors
+
+
+map {
+	boot: @init
+	1: @input_1
+	2: @input_2
+	3: @input_3
+	4: @input_4
+	5: @input_5
+	6: @input_6
+	7: @input_7
+	8: @input_8
+	9: @input_9
+	y: @restart
+	player: @player_first
+	bot: @bot_first
+}
+/* Empty space is 0, 1 is O, 2 is X*/
+/* 0 is no win, 1 is O win, 2 is X win */
+service init {
+	space1 = 0
+	space2 = 0
+	space3 = 0
+	space4 = 0
+	space5 = 0
+	space6 = 0
+	space7 = 0
+	space8 = 0
+	space9 = 0
+	win_hori_top = 0
+	win_hori_middle = 0
+	win_hori_bottom = 0
+	win_vert_left = 0
+	win_vert_middle = 0
+	win_vert_right = 0
+	win_diag_topleft = 0
+	win_diag_topright = 0
+	rng = 145
+	first_turn = 0
+	win = 0
+	tie = 0
+	@setup
+}
+
+
+service setup {
+	[echo Hey! This is a tic tac toe game with an `AI` by tmob]
+	[echo To start, type $y]
+	[echo You are Os, to place an O on the tile on your turn, type $1-9,]
+	[echo starting from the top left to the bottom right, i.e middle is $5]
+}
+
+
+service start {
+	[echo Who would you like to go first?]
+	[echo $player for yourself, $bot for the script!]
+}
+
+service player_first {
+	if (first_turn == 0) {
+		[echo You go first! Its your move.]
+		@render_board
+	}
+	first_turn = 1
+}
+
+service bot_first {
+	if (first_turn == 0) {
+	[echo The bot goes first! Moving now...]
+	@cycle_rng
+	@ai_turn
+	first_turn = 1
+	}
+}
+
+service player_turn {
+	[echo It`s your turn! Make your move now.]
+}
+
+service ai_turn {
+	@cycle_rng
+	if (rng < 28) {
+		if (space1 == 0) {
+			space1 = 2
+			ai_chose = 0
+			loopnum = 1
+		} else {
+			@ai_turn
+			loopnum = 0
+		}
+	} else {
+		if (rng < 56) {
+			if (space2 == 0) {
+				space2 = 2
+				ai_chose = 1
+				loopnum = 1
+			} else {
+				@ai_turn
+				loopnum = 0
+			}
+		} else {
+		if (rng < 84) {
+			if (space3 == 0) {
+				space3 = 2
+				ai_chose = 2
+				loopnum = 1
+			} else {
+				@ai_turn
+				loopnum = 0
+			}
+		} else {
+		if (rng < 112) {
+			if (space4 == 0) {
+				space4 = 2
+				ai_chose = 3
+				loopnum = 1
+			} else {
+				@ai_turn
+				loopnum = 0
+			}
+		} else {
+			if (rng < 141) {
+				if (space5 == 0) {
+					space5 = 2
+					ai_chose = 4
+					loopnum = 1
+				} else {
+					@ai_turn
+					loopnum = 0
+				}
+			} else {
+				if (rng < 169) {
+				if (space6 == 0) {
+					space6 = 2
+					ai_chose = 5
+					loopnum = 1
+				} else {
+					@ai_turn
+					loopnum = 0
+				}
+			} else {
+				if (rng < 197) {
+					if (space7 == 0) {
+						space7 = 2
+						ai_chose = 6
+						loopnum = 1
+					} else {
+						@ai_turn
+						loopnum = 0
+					}
+				} else {
+					if (rng < 225) {
+						if (space8 == 0) {
+							space8 = 2
+							ai_chose = 7
+							loopnum = 1
+						} else {
+							@ai_turn
+							loopnum = 0
+						}
+					} else {
+						if (rng < 255) {
+							if (space9 == 0) {
+								space9 = 2
+								ai_chose = 8
+								loopnum = 1
+							} else {
+								@ai_turn
+								loopnum = 0
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+	}
+	}
+	}
+	if (loopnum == 1) {
+	loopnum = 0
+		jump (ai_chose) {
+			{[echo The computer placed an X on 1]}
+			{[echo The computer placed an X on 2]}
+			{[echo The computer placed an X on 3]}
+			{[echo The computer placed an X on 4]}
+			{[echo The computer placed an X on 5]}
+			{[echo The computer placed an X on 6]}
+			{[echo The computer placed an X on 7]}
+			{[echo The computer placed an X on 8]}
+			{[echo The computer placed an X on 9]}
+		}
+	@render_board
+	@check_win
+	if (win == 0) {
+		if (tie < 12) {
+			@player_turn
+		}
+	}
+	ai_choose = 0
+	}
+
+}
+
+
+service render_board {
+	if (loopnum == 0) {
+		input = space1
+		input2 = space2
+		input3 = space3
+		@cout_board
+	}
+	if (loopnum == 1) {
+		input = space4
+		input2 = space5
+		input3 = space6
+		@cout_board
+	}
+	if (loopnum == 2) {
+		input = space7
+		input2 = space8
+		input3 = space9
+		@cout_board
+	}
+	if (loopnum > 2) {
+		loopnum = 0
+		[echo -----------------------]
+	}
+}
+
+service cout_board {
+	if (input == 1) {
+		if (input2 == 1) {
+			if (input3 == 1) {
+				[echo O|O|O]
+			}
+			if (input3 == 2) {
+				[echo O|O|X]
+			}
+			if (input3 == 0) {
+				[echo O|O|_]
+			}
+		}
+		if (input2 == 2) {
+			if (input3 == 1) {
+				[echo O|X|O]
+			}
+			if (input3 == 2) {
+				[echo O|X|X]
+			}
+			if (input3 == 0) {
+				[echo O|X|_]
+			}
+		}
+		if (input2 == 0) {
+			if (input3 == 1) {
+				[echo O|_|O]
+			}
+			if (input3 == 2) {
+				[echo O|_|X]
+			}
+			if (input3 == 0) {
+				[echo O|_|_]
+			}
+		}
+	}
+	if (input == 2) {
+		if (input2 == 1) {
+			if (input3 == 1) {
+				[echo X|O|O]
+			}
+			if (input3 == 2) {
+				[echo X|O|X]
+			}
+			if (input3 == 0) {
+				[echo X|O|_]
+			}
+		}
+		if (input2 == 2) {
+			if (input3 == 1) {
+				[echo X|X|O]
+			}
+			if (input3 == 2) {
+				[echo X|X|X]
+			}
+			if (input3 == 0) {
+				[echo X|X|_]
+			}
+		}
+		if (input2 == 0) {
+			if (input3 == 1) {
+				[echo X|_|O]
+			}
+			if (input3 == 2) {
+				[echo X|_|X]
+			}
+			if (input3 == 0) {
+				[echo X|_|_]
+			}
+		}
+	}
+	if (input == 0) {
+		if (input2 == 1) {
+			if (input3 == 1) {
+				[echo _|O|O]
+			}
+			if (input3 == 2) {
+				[echo _|O|X]
+			}
+			if (input3 == 0) {
+				[echo _|O|_]
+			}
+		}
+		if (input2 == 2) {
+			if (input3 == 1) {
+				[echo _|X|O]
+			}
+			if (input3 == 2) {
+				[echo _|X|X]
+			}
+			if (input3 == 0) {
+				[echo _|X|_]
+			}
+		}
+		if (input2 == 0) {
+			if (input3 == 1) {
+				[echo _|_|O]
+			}
+			if (input3 == 2) {
+				[echo _|_|X]
+			}
+			if (input3 == 0) {
+				[echo _|_|_]
+			}
+		}
+	}
+	loopnum = loopnum + 1
+	@render_board
+}
+service check_win {
+	win_hori_top = (space1 & space2 & space3)
+	win_hori_middle = (space4 & space5 & space6)
+	win_hori_bottom = (space7 & space8 & space9)
+	win_vert_left = (space1 & space4 & space7)
+	win_vert_middle = (space2 & space5 & space8)
+	win_vert_right = (space3 & space6 & space9)
+	win_diag_topleft = (space1 & space5 & space9)
+	win_diag_topright = (space3 & space5 & space7)
+	
+	jump (win_hori_top) {{} {win = 1} {win = 2}}
+	jump (win_hori_middle) {{} {win = 1} {win = 2}}
+	jump (win_hori_bottom) {{} {win = 1} {win = 2}}
+	jump (win_vert_left) {{} {win = 1} {win = 2}}
+	jump (win_vert_middle) {{} {win = 1} {win = 2}}
+	jump (win_vert_right) {{} {win = 1} {win = 2}}
+	jump (win_diag_topleft) {{} {win = 1} {win = 2}}
+	jump (win_diag_topright) {{} {win = 1} {win = 2}}
+	tie = (space1 + space2 + space3 + space4 + space5 + space6 + space7 + space8 + space9)
+	/* 1 is player win (O), 2 is bot win (x) */
+	
+	jump (win) {{if (tie > 12) {@tie_game}} {@win_player} {@win_bot}}
+}
+
+
+
+service win_player {
+	[echo You won!]
+	[echo Would you like to play again? $y for yes or ignore for no]
+}
+
+
+service win_bot {
+	[echo You lost!]
+	[echo Would you like to play again? $y for yes or ignore for no]
+}
+
+service tie_game {
+	[echo Tie game!]
+	[echo Would you like to play again? $y for yes or ignore for no]
+}
+
+service restart {
+	space1 = 0
+	space2 = 0
+	space3 = 0
+	space4 = 0
+	space5 = 0
+	space6 = 0
+	space7 = 0
+	space8 = 0
+	space9 = 0
+	win_hori_top = 0
+	win_hori_middle = 0
+	win_hori_bottom = 0
+	win_vert_left = 0
+	win_vert_middle = 0
+	win_vert_right = 0
+	win_diag_topleft = 0
+	win_diag_topright = 0
+	first_turn = 0
+	win = 0
+	tie = 0
+	loopnum = 0
+	ai_choose = 0
+	@start
+}
+
+
+service input_1 {
+	if (space1 != 0) {
+		[echo This space is filled, try again]
+	} else {
+		[echo You placed an O on the first space]
+		rng = rng + 3
+		space1 = 1
+		@render_board
+		@ai_turn
+	}
+}
+
+service input_2 {
+	if (space2 != 0) {
+		[echo This space is filled, try again]
+	} else {
+		[echo You placed an O on the second space]
+		rng = rng + 1
+		space2 = 1
+		@render_board
+		@check_win
+		if (win == 0) {
+		@ai_turn
+		}
+	}
+}
+
+service input_3 {
+	if (space3 != 0) {
+		[echo This space is filled, try again]
+	} else {
+		[echo You placed an O on the third space]
+		rng = rng - 5
+		space3 = 1
+		@render_board
+		@check_win
+		if (win == 0) {
+		@ai_turn
+		}
+	}
+}
+
+service input_4 {
+	if (space4 != 0) {
+		[echo This space is filled, try again]
+	} else {
+		[echo You placed an O on the fourth space]
+		rng = rng + 2
+		space4 = 1
+		@render_board
+		@check_win
+		if (win == 0) {
+		@ai_turn
+		}
+	}
+}
+
+service input_5 {
+	if (space5 != 0) {
+		[echo This space is filled, try again]
+	} else {
+		[echo You placed an O on the fifth space]
+		rng = rng - 4
+		space5 = 1
+		@render_board
+		@check_win
+		if (win == 0) {
+		@ai_turn
+		}
+	}
+}
+
+service input_6 {
+	if (space6 != 0) {
+		[echo This space is filled, try again]
+	} else {
+		[echo You placed an O on the sixth space]
+		rng = rng + 27
+		space6 = 1
+		@render_board
+		@check_win
+		if (win == 0) {
+		@ai_turn
+		}
+	}
+}
+
+service input_7 {
+	if (space7 != 0) {
+		[echo This space is filled, try again]
+	} else {
+		[echo You placed an O on the seventh space]
+		space7 = 1
+		@render_board
+		@check_win
+		if (win == 0) {
+		@ai_turn
+		}
+	}
+}
+
+service input_8 {
+	if (space8 != 0) {
+		[echo This space is filled, try again]
+	} else {
+		[echo You placed an O on the eighth space]
+		rng = rng + 8
+		space8 = 1
+		@render_board
+		@check_win
+		if (win == 0) {
+		@ai_turn
+		}
+	}
+}
+
+service input_9 {
+	if (space9 != 0) {
+		[echo This space is filled, try again]
+	} else {
+		[echo You placed an O on the ninth space]
+		rng = (rng ^ 7)
+		space9 = 1
+		@render_board
+		@check_win
+		if (win == 0) {
+		@ai_turn
+		}
+	}
+}
+
+service cycle_rng {
+    rng = rng + 1
+	rng = rng ^ (rng << 7)
+    rng = rng ^ (rng >> 5)
+    rng = rng ^ (rng << 3)
+}
+
+service entropy_rng {
+    rng = rng + 1
+}

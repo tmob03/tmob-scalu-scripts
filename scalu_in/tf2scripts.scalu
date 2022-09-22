@@ -1,0 +1,592 @@
+sandbox tmob_script
+
+map{
+	boot: @init
+	slot1: @switch_to_1
+	slot2: @switch_to_2
+	slot3: @switch_to_3
+	previous: @switch_up
+	next: @switch_down
+	last: @switch_last
+	+attack: @attack_spy
+	-attack: @attack_spy
+	undisguise: @undisguise_spy
+	quit: @quit_save_binds
+}
+
+
+
+service init{
+	current_weapon = 1
+	last_weapon = 3
+	max_slot = 3
+	last_tele = 0
+	rng = 1
+	loopnum = 0
+	
+	[bind mouse1 +attack]
+	[bind a +moveleft]
+	[bind w +forward]
+	[bind d +moveright]
+	[bind space +jump]
+	[bind 1 $slot1]
+	[bind 2 $slot2]
+	[bind 3 $slot3]
+	[bind q $last]
+	[bind mwheelup $previous]
+	[exec loadouts.txt]
+}
+
+
+map {
+	scout: @scout
+	soldier: @soldier
+	pyro: @pyro
+	demoman: @demo
+	heavyweapons: @heavy
+	engineer: @engineer
+	medic: @medic
+	sniper: @sniper
+	spy: @spy
+}
+
+file {
+	scout: scout
+	soldier: soldier
+	pyro: pyro
+	demoman: demoman
+	heavyweapons: heavyweapons
+	engineer: engineer
+	medic: medic
+	sniper: sniper
+	spy: spy
+}
+
+
+service scout {
+	class = 0
+	@set_max_3
+	@default_binds
+}
+service soldier {
+	class = 1
+	@set_max_3
+	@default_binds
+}
+service pyro {
+	class = 2
+	@set_max_3
+	@default_binds
+}
+service demo {
+	class = 3
+	@set_max_3
+	@default_binds
+}
+service heavy {
+	class = 4
+	@set_max_3
+	@default_binds
+}
+service engineer {
+	class = 5
+	@set_max_5
+	@default_binds
+	@eureka_start
+	@engie_bind
+}
+service medic {
+	class = 6
+	@set_max_3
+	@default_binds
+	@medic_bind
+	[hud_medicautocallersthreshold 15]
+}
+service sniper {
+	class = 7
+	@set_max_3
+	@default_binds
+}
+service spy {
+	class = 8
+	@set_max_4
+	@default_binds
+	@spy_bind
+	autodisguise = 0
+}
+
+service switch_to_1 {
+	[slot1]
+	if current_weapon != 1 {
+		last_weapon = current_weapon
+		current_weapon = 1
+	}
+}
+
+service switch_to_2 {
+	[slot2]
+	if current_weapon != 2 {
+		last_weapon = current_weapon
+		current_weapon = 2
+	}
+}
+
+service switch_to_3 {
+	[slot3]
+	if current_weapon != 3 {
+		last_weapon = current_weapon
+		current_weapon = 3
+	}
+}
+
+service switch_up {
+	[invprev]
+	last_weapon = current_weapon
+	if current_weapon == max_slot {
+		current_weapon = 1
+	}
+	else {
+		current_weapon = current_weapon + 1
+	}
+}
+
+service switch_down {
+	[invnext]
+	last_weapon = current_weapon
+	if current_weapon == 1 {
+		current_weapon = max_slot
+	}
+	else {
+		current_weapon = current_weapon - 1
+	}
+}
+
+service switch_last {
+	[lastinv]
+	store_var = last_weapon
+	last_weapon = current_weapon
+	current_weapon = store_var
+}
+
+service set_max_3 {
+	max_slot = 3
+}
+
+service set_max_4 {
+	max_slot = 4
+}
+
+service set_max_5 {
+	max_slot = 5
+}
+
+map {
+	+shift: @shift
+	-shift: @shift
+	shift_help1: @shift_helper1
+	shift_help2: @shift_helper2
+	shift_help3: @shift_helper3
+	shift_help4: @shift_helper4
+}
+service shift {
+	if (loopnum == 0) {
+		if (class == 5) {
+			[bind 1 $shift_help1]
+			[bind 2 $shift_help2]
+			[bind 3 $shift_help3]
+			[bind 4 $shift_help4]
+		} else {
+			[$slot2; +attack]
+		}
+		loopnum = 1
+	} else {
+		if (class == 5) {
+			[bind 1 $slot1]
+			[bind 2 $slot2]
+			[bind 3 $slot3]
+			[bind 4 slot4]
+			[$last]
+		} else {
+			[$last; -attack]
+		}
+		loopnum = 0
+	}
+}
+
+service shift_helper1 {
+	[destroy 2 0]
+	[build 2 0]
+}
+
+service shift_helper2 {
+	[destroy 0 0]
+	[build 0 0]
+}
+
+service shift_helper3 {
+	[destroy 1 0]
+	[build 1 0]
+}
+
+service shift_helper4 {
+	[destroy 1 1]
+	[build 1 1]
+}
+
+service default_binds {
+	[bind mouse2 +attack2]
+	[bind b lastdisguise]
+	[bind n open_charinfo_backpack]
+	[bind m open_charinfo_direct]
+	[bind shift +speed]
+	[bind mouse3 +attack3]
+	[bind 1 $slot1]
+	[bind 2 $slot2]
+	[bind 3 $slot3]
+	[bind q $last]
+	[bind mwheelup $previous]
+	[bind = h]
+}
+
+service engie_bind {
+	[bind b +$spawn]
+	[bind n +$exit]
+	[bind m +$last]
+	[bind shift +$shift]
+}
+
+service spy_bind {
+	[bind a +moveleft;$cycle_rng]
+	[bind w +forward;$entropy_rng]
+	[bind d +moveright;$entropy_rng]
+	[bind space +jump;$cycle_rng]
+	[bind n $rng_disguise]
+	[bind shift +$shift]
+	[bind = $undisguise]
+	if (spy_loadout == 1) {
+		[bind mouse1 +attack]
+	} else {
+		[bind mouse1 +$attack]
+	}
+}
+
+map {
+	+uberstock: @uberstock
+	-uberstock: @uberstock
+	+uberkritz: @uberkritz
+	-uberkritz: @uberkritz
+	+uberquickfix: @uberquickfix
+	-uberquickfix: @uberquickfix
+	+radar: @medic_radar
+	-radar: @medic_radar
+	+quickfire: @quickfire
+	-quickfire: @quickfire
+}
+
+service medic_bind {
+	@ubercheck
+	[bind mouse4 +$radar]
+	[bind mouse3 +$quickfire]
+	[bind = say_team Can I have a sandvich please, heavy?]
+}
+
+service ubercheck {
+	if (medigun == 0) {
+		[bind mouse2 +$uberstock]
+	} 
+	if (medigun == 1) {
+		[bind mouse2 +$uberkritz]
+	}
+	if (medigun == 2) {
+		[bind mouse2 +$uberquickfix]
+	} 
+	if (medigun == 3) {
+		[bind mouse2 +attack2]
+	}
+}
+
+service quickfire {
+	if (loopnum == 0) {
+		if (current_weapon == 1) {
+			@switch_to_3
+			[+attack]
+		} else {
+			@switch_to_1
+			[+attack]
+		}
+		loopnum = 1
+	} else {
+		[-attack]
+		@switch_last
+		loopnum = 0
+	}
+}
+
+service medic_radar {
+	if (loopnum == 0) {
+		[hud_medicautocallersthreshold 150]
+		loopnum = 1
+	} else {
+		[hud_medicautocallersthreshold 15]
+		loopnum = 0
+	}
+}
+service uberstock {
+	if (current_weapon == 2) {
+		if (loopnum == 0) {
+			[+attack2]
+			[say_team Stock uber used!]
+			loopnum = 1
+		} else {
+			[-attack2]
+			loopnum = 0
+		}
+	}
+}
+
+service uberkritz {
+	if (current_weapon == 2) {
+		if (loopnum == 0) {
+			[+attack2]
+			[say_team Kritz uber used!]
+			loopnum = 1
+		} else {
+			[-attack2]
+			loopnum = 0
+		}
+	}
+}
+
+service uberquickfix {
+	if (current_weapon == 2) {
+		if (loopnum == 0) {
+			[+attack2]
+			[say_team Quickfix uber used!]
+			loopnum = 1
+		} else {
+			[-attack2]
+			loopnum = 0
+		}
+	}
+}
+
+service attack_spy {
+	loopnum = loopnum + 1
+	[+attack]
+	if (loopnum == 2) {
+		[-attack]
+		if (undisguise_toggle == 0) {
+			jump (autodisguise) { {[disguise 1 -1]} {[disguise 3 - 1]} {[disguise 7 -1]} {[disguise 4 -1]} {[disguise 6 -1]} {[disguise 9 -1]} {[disguise 5 -1]} {[disguise 2 -1]} {[disguise 8 - 1]} }
+		}
+		loopnum = 0
+	}
+}
+
+map {
+	+spawn: @tele_spawn
+	-spawn: @tele_spawn
+	+exit: @tele_exit
+	-exit: @tele_exit
+	+last: @tele_last
+	-last: @tele_last
+}
+
+
+service eureka_start {
+	last_tele = 0
+}
+
+
+service tele_spawn {
+	[use tf_weapon_wrench;eureka_teleport]
+	last_tele = 0
+}
+
+service tele_exit {
+	[use tf_weapon_wrench;eureka_teleport 1]
+	last_tele = 1
+}
+
+
+service tele_last {
+	jump (last_tele) { {[use tf_weapon_wrench;eureka_teleport]} {[use tf_weapon_wrench;eureka_teleport 1]}}
+}
+
+
+map {
+	rng_disguise: @rng_disguise
+	entropy_rng: @entropy_rng
+	cycle_rng: @cycle_rng
+	scout_dis: @scout_dis
+	soldier_dis: @soldier_dis
+	pyro_dis: @pyro_dis
+	demo_dis: @demo_dis
+	heavy_dis: @heavy_dis
+	engie_dis: @engie_dis
+	medic_dis: @medic_dis
+	sniper_dis: @sniper_dis
+	spy_dis: @spy_dis
+}
+
+service scout_dis { autodisguise = 0 } service soldier_dis { autodisguise = 1} service pyro_dis { autodisguise = 2 } service demo_dis { autodisguise = 3 } service heavy_dis { autodisguise = 4 } service engie_dis { autodisguise = 5 } service medic_dis { autodisguise = 6 } service sniper_dis { autodisguise = 7 } service spy_dis { autodisguise = 8 }
+
+service rng_disguise {
+	@cycle_rng
+	if (rng <= 255) {
+		[disguise 9 -1]
+	}
+	if (rng <= 223) {
+		[disguise 8 -1]
+	}
+	if (rng <= 191) {
+		[disguise 7 -1]
+	}
+	if (rng <= 159) {
+		[disguise 6 -1]
+	}
+	if (rng <= 127) {
+		[disguise 5 -1]
+	}
+	if (rng <= 95) {
+		[disguise 4 -1]
+	}
+	if (rng <= 63) {
+		[disguise 3 -1]
+	}
+	if (rng <= 31) {
+		[disguise 2 -1]
+	}
+	if (rng == 27) {
+		[disguise 1 -1]
+	}
+}
+
+service undisguise_spy {
+	if (undisguise_toggle == 1) {
+		undisguise_toggle = 0
+	} else {
+		[disguise 8 -2]
+		undisguise_toggle = 1
+	}
+}
+
+
+service cycle_rng {
+    rng = rng + 1
+	rng = rng ^ (rng << 7)
+    rng = rng ^ (rng >> 5)
+    rng = rng ^ (rng << 3)
+}
+
+service entropy_rng {
+    rng = rng + 1
+}
+
+/* resup binds/also saving below */
+
+map {
+	loadout1: @loadout1
+	loadout2: @loadout2
+	loadout3: @loadout3
+	loadout4: @loadout4
+}
+
+service loadout1 {
+	if (class == 6) {
+		medigun = 0
+		@medic_bind
+	}
+	if (class == 8) {
+		spy_loadout = 0
+		@spy_bind
+	}
+	[load_itempreset 0]
+}
+
+service loadout2 {
+	if (class == 6) {
+		medigun = 1
+		@medic_bind
+	}
+	if (class == 8) {
+		spy_loadout = 0
+		@spy_bind
+	}
+	[load_itempreset 1]
+}
+
+service loadout3 {
+	if (class == 6) {
+		medigun = 2
+		@medic_bind
+	}
+	if (class == 8) {
+		spy_loadout = 0
+		@spy_bind
+	}
+	[load_itempreset 2]
+}
+
+service loadout4 {
+	if (class == 6) {
+		medigun = 3
+		@medic_bind
+	}
+	if (class == 8) {
+		spy_loadout = 1
+		@spy_bind
+	}
+	[load_itempreset 3]
+}
+
+map {
+	m0: @medic_load_1
+	m1: @medic_load_2
+	m2: @medic_load_3
+	m3: @medic_load_4
+	s0: @spy_load
+	s3: @spy_load_yer
+}
+
+service quit_save_binds {
+	[con_logfile cfg/loadouts.txt]
+	if (medic_load != medigun) {
+		jump (medigun) { {[echo $m0]} {[echo $m1]}  {[echo $m2]} {[echo $m3]}}
+	}
+	if (spy_load != spy_loadout) {
+		jump (spy_loadout) { {[echo $s0]} {[echo $s3]}}
+	}
+	[exec save_end] /* turn log file off thats all thats needed */
+	[exit]
+}
+
+service medic_load_1 {
+	medigun = 0
+	medic_load = 0
+}
+service medic_load_2 {
+	medigun = 1
+	medic_load = 1
+}
+
+service medic_load_3 {
+	medigun = 2
+	medic_load = 2
+}
+
+service medic_load_4 {
+	medigun = 3
+	medic_load = 3
+}
+
+
+
+service spy_load {
+	spy_loadout = 0
+	spy_load = 0
+}
+
+service spy_load_yer {
+	spy_loadout = 1
+	spy_load = 1
+}
