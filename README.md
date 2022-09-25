@@ -19,15 +19,37 @@ To run scalu, you will need Python 3.6 or later installed on your system. Create
 
 If you do not have git installed, you can simply download the project from Github and unpack it in a directory of your choice. Once that is done, you should have a running scalu compiler.
 
-Input files go in the ```scalu_in``` directory. To compile them, go to the ```python``` directory and run: <br>
+Input files go in the ```scalu_in``` directory. To compile them, go to the root directory and run: <br>
 
-```python scalu.py compile``` <br>
+```python scalu -m compile``` <br>
 
 Linux users may need to run: <br>
 
-```python3 scalu.py compile``` <br>
+```python3 scalu -m compile``` <br>
 
 The output will be located in a new directory called ```scalu_out```. Copy these into your configuration files; the exact location of these files will depend on platform and game.
+
+
+### Standalone Install
+scalu can also be used outside of the project directory. To do this, run:
+
+```python -m pip install --user .```
+
+Linux users may need to run:
+```python3 -m pip install --user .```
+
+## Usage
+The scalu compiler allows you to change some of its default behavior with optional arguments. For example:
+
+To specify input files and directories, you can use the `--input` flag:
+
+```scalu compile --input /path/to/directory example.scalu```
+
+To specify an output directory, you can use the `--output` flag:
+
+```scalu compile --output /path/to/output/folder```
+
+By default, the compiler will also remove all files in output directory. To disable this behavior, you can use the `--noremove` flag.
 
 ## Documentation
 
