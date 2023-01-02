@@ -1,0 +1,133 @@
+sandbox p2ce
+
+map {
+	boot: @init
+	slot1: @slot1
+	slot2: @slot2
+	slot3: @slot3
+	slot4: @slot4
+	slot5: @slot5
+	slot6: @slot6
+	give_all_weapons: @give_all_weapons
+	next_weapon: @next_weapon
+	prev_weapon: @prev_weapon
+	last_weapon: @last_weapon
+}
+
+service init {
+/* 0 = crowbar, gravity gun, pistol, 357, smg, ar2, shotgun, crossbow, nade, rpg, bugbait.*/
+	current_weapon = 0
+	last_weapon = 10
+	templast = 10
+	}
+	
+	
+service slot1 {
+	last_weapon = current_weapon
+	if (current_weapon != 0) {
+		current_weapon = 0
+		@swap_weapon
+	} else {
+		current_weapon = 1
+		@swap_weapon
+	}
+}
+
+service slot2 {
+	last_weapon = current_weapon
+	if (current_weapon != 2) {
+		current_weapon = 2
+		@swap_weapon
+	} else {
+		current_weapon = 3
+		@swap_weapon
+	}
+}
+
+service slot3 {
+	last_weapon = current_weapon
+	if (current_weapon != 4) {
+		current_weapon = 4
+		@swap_weapon
+	} else {
+		current_weapon = 5
+		@swap_weapon
+	}
+}
+
+service slot4 {
+	last_weapon = current_weapon
+	if (current_weapon != 6) {
+		current_weapon = 6
+		@swap_weapon
+	} else {
+		current_weapon = 7
+		@swap_weapon
+	}
+}
+
+service slot5 {
+	last_weapon = current_weapon
+	if (current_weapon != 8) {
+		current_weapon = 8
+		@swap_weapon
+	} else {
+		current_weapon = 9
+		@swap_weapon
+	}
+}
+
+service slot6 {
+	last_weapon = current_weapon
+	current_weapon = 10
+	@swap_weapon
+}
+
+service next_weapon {
+	last_weapon = current_weapon
+	if (current_weapon == 10) {
+		current_weapon = 0
+	} else {
+		current_weapon = current_weapon + 1
+	}
+	@swap_weapon
+}
+
+service prev_weapon {
+	last_weapon = current_weapon
+	if (current_weapon == 0) {
+		current_weapon = 10
+	} else {
+		current_weapon = current_weapon - 1
+	}
+	@swap_weapon
+}
+
+service last_weapon {
+	templast = last_weapon
+	last_weapon = current_weapon
+	current_weapon = templast
+	@swap_weapon
+}
+
+service swap_weapon {
+	jump (current_weapon) {
+	{[use weapon_crowbar]}
+	{[use weapon_physcannon]}
+	{[use weapon_pistol]}
+	{[use weapon_357]}
+	{[use weapon_smg1]}
+	{[use weapon_ar2]}
+	{[use weapon_shotgun]}
+	{[use weapon_crossbow]}
+	{[use weapon_frag]}
+	{[use weapon_rpg]}
+	{[use weapon_bugbait]}
+	}
+}
+
+
+service give_all_weapons {
+	[sv_cheats 1;give weapon_crowbar;give weapon_physcannon;give weapon_pistol;give weapon_357;give weapon_smg1;give weapon_ar2;give weapon_shotgun;give weapon_crossbow;give weapon_frag;give weapon_rpg;give weapon_bugbait]
+}
+	
