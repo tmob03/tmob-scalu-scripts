@@ -12,7 +12,8 @@ def handle_instruction(global_object, compute, statement):
                 'subtract' : isubtract,
                 'left_shift' : ileft_shift,
                 'right_shift' : iright_shift,
-                'bitwise_xor' :ibitwise_xor
+                'bitwise_xor' : ibitwise_xor,
+                'bit_scan_reverse' : ibit_scan_reverse
                 }
     uni = global_object.universe
     if statement.output not in uni.constructs:
@@ -53,20 +54,20 @@ def handle_jump(global_object, compute, statement):
     jump_class.compile()
 
 def generate_var(global_object, arg):
-        uni = global_object.universe
-        if model.is_constant(arg):
-            conlist = [x.value for x in uni.constant_constructs]
-            unilist = [x for x in uni.constant_constructs]
-            if arg.value in conlist:
-                var = unilist[conlist.index(arg.value)]
-                uni.constructs[arg] = var
-            else:
-                var = universe.variable(global_object, arg)
-                uni.constant_constructs.append(var)
-                uni.constructs[arg] = var
+    uni = global_object.universe
+    if model.is_constant(arg):
+        conlist = [x.value for x in uni.constant_constructs]
+        unilist = [x for x in uni.constant_constructs]
+        if arg.value in conlist:
+            var = unilist[conlist.index(arg.value)]
+            uni.constructs[arg] = var
         else:
             var = universe.variable(global_object, arg)
+            uni.constant_constructs.append(var)
             uni.constructs[arg] = var
+    else:
+        var = universe.variable(global_object, arg)
+        uni.constructs[arg] = var
 
 
 class jump():
@@ -421,6 +422,10 @@ class iright_shift(instruction):
         else:
             raise Exception('Illegal shift by variable quantity')
         
+class ibit_scan_reverse(instruction):
+    
+    def compile(self)
+
 
 class arithmetic_instruction(instruction):
 
@@ -538,6 +543,7 @@ class isubtract(arithmetic_instruction):
         else:
             raise Exception('bad branch state')
         return compute
+
 
 
 
