@@ -187,6 +187,15 @@ class instruction():
             raise Exception('incorrect use of constant determination')
         return constant, nonconstant
 
+class ibit_scan_reverse(instruction):
+    def compile(self):
+        if self.alpha_is_constant():
+            for bit in range(int(self.statement.output.word_size)):
+                if self.alpha.bool_string[bit] == '1':
+                    self.identity_compute.extend(self.output.set_true[bit].alias)
+                    break
+
+                    
 
 class icopy(instruction):
 
