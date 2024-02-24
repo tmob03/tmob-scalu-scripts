@@ -12,12 +12,17 @@ def minify(cfg_string, uni):
     output_text = reallocate(output_text, blob)
     output_text = clean_output(output_text)
     output_text = deduplicate(output_text)
+    output_text = write_once_reduction(output_text)
+    output_text = clean_output(output_text)
+    output_text = inline_reduction(output_text)
     return output_text
 
 def clean_output(output_text):
     output_text = re.sub(';(\s*)\"', '"', output_text)
-    output_text = re.sub('\";', '"', output_text)
+    output_text = output_text.replace('";', '"')
     output_text = re.sub('\n{2,}', '\n', output_text)
+    output_text = re.sub(';{2,}', ';', output_text)
+    output_text = output_text.replace('";', '"')
     return output_text
 
 def minify_names(blob):
@@ -47,7 +52,7 @@ def split_tail_word(tail):
 
 
 def reallocate(output_text, blob):
-    split_lines = re.split('\n', output_text)
+    split_lines = output_text.split('\n')
     line = 0
     while True:
         if len(split_lines[line]) > blob.CONSOLE_MAX_BUFFER:
@@ -61,28 +66,34 @@ def reallocate(output_text, blob):
 
 
 
-def compute_reallocation(text, blob):
-    command_split = re.split(';', text)
-    line_count = math.ceil(len(text) / blob.CONSOLE_MAX_BUFFER) + 1
-    new_aliases = blob.pick.new_alias_list(line_count)
+def compute_reallocation(text, blob, override_line_count=0):
+    text = text.rstrip('"')
+    command_split = text.split(';')
+    command_count = len(command_split)
+    line_count = math.ceil(len(text) / blob.CONSOLE_MAX_BUFFER) + override_line_count
+    new_aliases = blob.pick.new_alias_list(line_count - 1)
+    proportion = math.ceil(command_count/line_count)
     lines = [''] * line_count
-    command = 0
-    for line in range(len(lines)):
-        if line > 0 and command < len(command_split):
-            lines[line] = 'alias ' + new_aliases[line - 1] + ' "'
-        while(command < len(command_split)):
-            test_line = lines[line] + command_split[command] + ';' + new_aliases[line]
-            if len(test_line) < blob.CONSOLE_MAX_BUFFER:
-                lines[line] = lines[line] + command_split[command] + ';'
-                command += 1
-            else:
-                lines[line] = lines[line] + new_aliases[line] + '"'
-                break
+    for line in range(line_count):
+        if line == 0:
+            lines[0] = ';'.join(command_split[:proportion]) + ';' + new_aliases[0] + '"'
+        elif line == line_count - 1:
+            lines[line] = 'alias ' + new_aliases[line - 1] + ' "' + ';'.join(command_split[proportion * line:proportion * (line + 1)]) + '"'
+        else:
+            lines[line] = 'alias ' + new_aliases[line - 1] + ' "' + ';'.join(command_split[proportion * line:proportion * (line + 1)]) + ';' + new_aliases[line] + '"'
+        if len(lines[line]) > blob.CONSOLE_MAX_BUFFER:
+            return compute_reallocation(text, blob, override_line_count + 1)
     return lines
 
 
 def to_tuple_list(cfg_string):
-    return list(re.findall('alias\s(\S+)\s\"(.*)\"', cfg_string))
+    return tuple(new_tuple_pattern().findall(cfg_string))
+
+def compiled_tuple_list(tuple_pattern, cfg_string):
+    return tuple(tuple_pattern.findall(cfg_string))
+
+def new_tuple_pattern():
+    return re.compile('alias\s(\S+)\s\"(.*)\"')
 
 def minify_word(word, alias_convert):
     if word in alias_convert:
@@ -90,8 +101,9 @@ def minify_word(word, alias_convert):
     else:
         return word
 
-def replace_words(replacement_map, cfg):
+def replace_words(replacement_map, cfg, cache):
     words = list()
+    tuple_pattern = cache[0]
     split_cfg = split_tail_word(cfg)
     for word in split_cfg:
         if word in replacement_map:
@@ -99,31 +111,36 @@ def replace_words(replacement_map, cfg):
         else:
             words.append(word)
     words = ''.join(words)
-    line_split = re.split('\n', words)
+    line_split = words.split('\n')
     purged_split = list()
+    tuple_pattern = cache[0]
     for split in line_split:
-        element_list = to_tuple_list(split)
+        element_list = compiled_tuple_list(tuple_pattern, split)
         if len(element_list) == 0 or (element_list[0][0] != element_list[0][1]):
             purged_split.append(split)
-    line_split = list(dict.fromkeys(purged_split))
+    line_split = tuple(dict.fromkeys(purged_split))
     return '\n'.join(line_split)
 
 
 def deduplicate(cfg):
     count = 0
     running = True
+    word_pattern = re.compile('^%\w*$')
+    cache = [new_tuple_pattern(), word_pattern]
     while count < 500:
         count += 1
-        new_cfg = deduplicate_instance(cfg)
+        new_cfg = deduplicate_instance(cfg, cache)
         if len(new_cfg) == len(cfg):
             return cfg
         cfg = new_cfg
     return cfg
 
-def deduplicate_instance(cfg):
+def deduplicate_instance(cfg, cache):
     HEAD = 0
     TAIL = 1
-    tuple_list = to_tuple_list(cfg)
+    tuple_pattern = cache[0]
+    word_pattern = cache[1]
+    tuple_list = compiled_tuple_list(tuple_pattern, cfg)
     unique_tails = dict()
     head_map = dict()
     for ele in tuple_list:
@@ -131,15 +148,45 @@ def deduplicate_instance(cfg):
             unique_tails[ele[TAIL]] = ele[HEAD]
         else:
             head_map[ele[HEAD]] = unique_tails[ele[TAIL]]
-    new_cfg = replace_words(head_map, cfg)
-    tuple_list = to_tuple_list(new_cfg)
+    new_cfg = replace_words(head_map, cfg, cache)
+    tuple_list = compiled_tuple_list(tuple_pattern, new_cfg)
     replacement_map = dict()
     for ele in tuple_list:
-        if re.match('^%\w*$', ele[TAIL]) and re.match('^%\w*$', ele[HEAD]):
+        if word_pattern.match(ele[TAIL]) and word_pattern.match(ele[HEAD]):
             replacement_map[ele[HEAD]] = ele[TAIL]
-    new_cfg = replace_words(replacement_map, new_cfg)
+    new_cfg = replace_words(replacement_map, new_cfg, cache)
     return new_cfg
 
+
+def write_once_reduction(cfg):
+    all_vars = re.findall('(%[a-z0-9]*)', cfg)
+    unique_vars = tuple(set(all_vars))
+    for var in unique_vars:
+        outer_assignments = re.findall('(alias ' + var + ' \")', cfg)
+        if len(outer_assignments) > 0:
+            continue
+        assignments = re.findall('alias '+ var + ' (%[a-z0-9]*)', cfg)
+        if len(assignments) == 1:
+            cfg = cfg.replace('alias ' + var + ' ' + assignments[0], '')
+            cfg = cfg.replace(';' + var + '"', ';'+assignments[0]+'"')
+            cfg = cfg.replace(';' + var + ';', ';'+assignments[0]+';')
+    return cfg
+
+def inline_reduction(cfg):
+    split_lines = cfg.split('\n')
+    new_lines = list()
+    exec_pattern = re.compile(';(%[a-z0-9]*)(?:\"|;)')
+    for line in split_lines:
+        execs = exec_pattern.findall(line)
+        if len(execs) > 0:
+            for execute in execs:
+                assigns = re.findall('alias ' + execute + ' (%[a-z0-9]*);', line)
+                if len(assigns) > 0:
+                    #line = line.replace(';' + execute + ';', ';' + assigns[len(assigns)-1] + ';') TODO: Find out why this does not work
+                    line = line.replace(';' + execute + '"', ';' + assigns[len(assigns)-1] + '"')
+        new_lines.append(line)
+    new_output = '\n'.join(new_lines)
+    return new_output
 
 class alias_blob():
 

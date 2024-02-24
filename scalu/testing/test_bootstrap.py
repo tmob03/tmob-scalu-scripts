@@ -16,10 +16,10 @@ def test():
     runner = unittest.TextTestRunner()
     runner.run(parsing)
     runner.run(operators)
-    #runner.run(preprocessing)
+    runner.run(preprocessing)
 
 def test_interpreter(verbose=True):
-    args = arg_handler.handle()
+    args = arg_handler.args
     con = native_console()
     program = ''
     with open('scalu/native/test.scalu', 'r') as file:

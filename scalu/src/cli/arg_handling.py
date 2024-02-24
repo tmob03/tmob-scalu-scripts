@@ -40,23 +40,46 @@ def handle():
     )
     parser.add_argument(
         '--eventprefix',
-        '-ep',
         action='store',
         default='$',
         nargs='?',
         const='',
         dest='eventprefix',
-        help='specify the event prefix'
+        help='Experimental: specify the event prefix'
     )
     parser.add_argument(
         '--aliasprefix',
-        '-ap',
         action='store',
         default='%',
         nargs='?',
         const='',
         dest='aliasprefix',
-        help='specify the prefix used for internal aliases'
+        help='Experimental: specify the prefix used for internal aliases'
+    )
+    parser.add_argument(
+        '--forcewordsize',
+        action='store',
+        default='8',
+        nargs='?',
+        const='',
+        dest='forcewordsize',
+        help='Experimental: force a maximum word size.'
+    )
+    parser.add_argument(
+        '--enablemacros',
+        action='store',
+        default=False,
+        nargs='?',
+        const='',
+        dest='enablemacros',
+        help='Unstable: enable compile time macros.'
+    )
+    parser.add_argument(
+        '--debug',
+        action='store_true',
+        default=False,
+        dest='debug',
+        help='Unused: run in debug mode'
     )
 
     args = parser.parse_args()
@@ -65,3 +88,5 @@ def handle():
         raise Exception('scalu must be provided with a command to run: compile, test, etc')
 
     return args
+
+args = handle()

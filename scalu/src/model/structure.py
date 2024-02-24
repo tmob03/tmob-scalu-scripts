@@ -1,7 +1,11 @@
 
 import scalu.src.frontend.utility.utility as utility
 import scalu.src.model.universe as universe
+import math as math
+import scalu.src.cli.arg_handling as arg_handler
 
+def get_max_word_size():
+    return arg_handler.args.forcewordsize
 
 class rd_obj():
 
@@ -10,6 +14,9 @@ class rd_obj():
         self.declared = False
 
     def declaration_collision(self):
+        pass
+
+    def validate_specific(self):
         pass
 
 class rd_list(list):
@@ -60,6 +67,7 @@ class rd_list(list):
         for obj in self:
             if not obj.declared:
                 raise Exception(obj.name + ' has not been declared')
+            obj.validate_specific()
 
 class global_object():
 
@@ -121,27 +129,48 @@ class sandbox(rd_obj):
         rd_obj.__init__(self)
         self.variables = rd_list().setup(variable)
         self.services = rd_list().setup(service)
+        self.min_word_size = '2'
+        self.max_word_size = get_max_word_size()
+    
+    def validate_specific(self):
+        self.optimize_assignments()
+        for variable in self.variables:
+            self.min_word_size = str(max(int(self.min_word_size), int(variable.min_word_size)))
+        for variable in self.variables:
+            variable.word_size = self.min_word_size
+    
+    def optimize_assignments(self):
+        for service in self.services:
+            new_sequence = list()
+            for element in service.sequence:
+                if is_assignment(element) and element.identifier.declaration_count == 1 and is_variable(element.arg[0]) and element.arg[0].is_constant:
+                    element.identifier.is_constant = True
+                    element.identifier.set_value(element.arg[0].value)
+                else:
+                    new_sequence.append(element)
+            service.sequence = new_sequence
 
 class variable(rd_obj):
 
-    def __init__(self, name=''):
+    def __init__(self, name='', is_constant=False):
         rd_obj.__init__(self)
         self.name = name
         self.type = 'int'
         self.value = '0'
-        self.word_size = '8'
+        self.word_size = get_max_word_size()
+        self.min_word_size = '2'
+        self.is_constant = False
+        self.declaration_count = 0
 
     def set_value(self, value):
         if int(value) < 2**int(self.word_size) and int(value) >= 0:
             self.value = value
+            self.min_word_size = utility.calc_min_word_size(self.min_word_size, value)
         else:
             raise Exception('illegal value declaration:' + value + ' . Number not within bounds of the word size')
-
-class constant(variable):
-
-    def __init__(self, value='0'):
-        variable.__init__(self, value)
-        self.set_value(value)
+    
+    def new_declaration(self):
+        self.declaration_count += 1
 
 class service(rd_obj):
 
@@ -206,6 +235,10 @@ class jump_statement():
         self.var = None
         self.services = list()
 
+    def update_word(self):
+        service_count = len(self.services)
+        self.var.min_word_size = utility.calc_min_word_size(self.var.min_word_size, service_count - 1)
+
 class operator():
 
     def __init__(self):
@@ -248,9 +281,6 @@ def is_binary_operator(arg):
 
 def is_variable(arg):
     return isinstance(arg, variable)
-
-def is_constant(arg):
-    return isinstance(arg, constant)
 
 def is_literal_value(arg):
     return isinstance(arg, literal_value)
